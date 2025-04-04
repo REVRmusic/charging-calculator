@@ -1,103 +1,124 @@
-import Image from "next/image";
+"use client"
+
+import { useState } from 'react';
 
 export default function Home() {
-  return (
-    <div className="grid grid-rows-[20px_1fr_20px] items-center justify-items-center min-h-screen p-8 pb-20 gap-16 sm:p-20 font-[family-name:var(--font-geist-sans)]">
-      <main className="flex flex-col gap-[32px] row-start-2 items-center sm:items-start">
-        <Image
-          className="dark:invert"
-          src="/next.svg"
-          alt="Next.js logo"
-          width={180}
-          height={38}
-          priority
-        />
-        <ol className="list-inside list-decimal text-sm/6 text-center sm:text-left font-[family-name:var(--font-geist-mono)]">
-          <li className="mb-2 tracking-[-.01em]">
-            Get started by editing{" "}
-            <code className="bg-black/[.05] dark:bg-white/[.06] px-1 py-0.5 rounded font-[family-name:var(--font-geist-mono)] font-semibold">
-              src/app/page.js
-            </code>
-            .
-          </li>
-          <li className="tracking-[-.01em]">
-            Save and see your changes instantly.
-          </li>
-        </ol>
+  // Déclaration des états pour les champs du formulaire et le résultat
+  const [distance, setDistance] = useState('');
+  const [autonomie, setAutonomie] = useState('');
+  const [consommation, setConsommation] = useState('');
+  const [puissance, setPuissance] = useState('');
+  const [marge, setMarge] = useState('');
+  const [resultat, setResultat] = useState(null);
 
-        <div className="flex gap-4 items-center flex-col sm:flex-row">
-          <a
-            className="rounded-full border border-solid border-transparent transition-colors flex items-center justify-center bg-foreground text-background gap-2 hover:bg-[#383838] dark:hover:bg-[#ccc] font-medium text-sm sm:text-base h-10 sm:h-12 px-4 sm:px-5 sm:w-auto"
-            href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            <Image
-              className="dark:invert"
-              src="/vercel.svg"
-              alt="Vercel logomark"
-              width={20}
-              height={20}
+  // Fonction qui se déclenche à la soumission du formulaire
+  const calculerCharge = (e) => {
+    e.preventDefault();
+
+    // Convertir les valeurs saisies en nombres décimaux
+    const distanceVal = parseFloat(distance);
+    const autonomieVal = parseFloat(autonomie);
+    const consommationVal = parseFloat(consommation);
+    const puissanceVal = parseFloat(puissance);
+    const margeVal = parseFloat(marge) / 100; // conversion du pourcentage en facteur
+
+    // Calcul de la distance à parcourir avec la marge de sécurité
+    const distanceAvecMarge = distanceVal * (1 + margeVal);
+    // Énergie requise pour parcourir la distance (en kWh)
+    const energieRequise = (distanceAvecMarge * consommationVal) / 100;
+    
+    // Calcul de l'énergie actuellement disponible dans la batterie
+    const energieDisponible = (autonomieVal * consommationVal) / 100;
+    
+    // Si l'énergie disponible est déjà suffisante, on affiche un message adapté
+    if (energieDisponible >= energieRequise) {
+       setResultat("Votre batterie est déjà suffisante pour le trajet.");
+       return;
+    }
+    
+    // Calcul de l'énergie à ajouter
+    const energieAAjouter = energieRequise - energieDisponible;
+    
+    // Calcul du temps de charge (en heures)
+    const tempsChargeHeures = energieAAjouter / puissanceVal;
+    // Extraction des heures entières et conversion des minutes
+    const heures = Math.floor(tempsChargeHeures);
+    const minutes = Math.round((tempsChargeHeures - heures) * 60);
+    
+    setResultat(`Temps de charge nécessaire : ${heures} heures et ${minutes} minutes.`);
+  };
+
+  return (
+    <div className="p-8 flex flex-col items-center">
+      <h1 className="text-2xl font-bold mb-4">
+        Calculateur de Temps de Charge pour Voiture Électrique
+      </h1>
+      <form onSubmit={calculerCharge}>
+        <div className="mb-4">
+          <label className="block">
+            Distance du trajet (km) :
+            <input
+              type="number"
+              value={distance}
+              onChange={(e) => setDistance(e.target.value)}
+              className="ml-4 border rounded p-1"
             />
-            Deploy now
-          </a>
-          <a
-            className="rounded-full border border-solid border-black/[.08] dark:border-white/[.145] transition-colors flex items-center justify-center hover:bg-[#f2f2f2] dark:hover:bg-[#1a1a1a] hover:border-transparent font-medium text-sm sm:text-base h-10 sm:h-12 px-4 sm:px-5 w-full sm:w-auto md:w-[158px]"
-            href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Read our docs
-          </a>
+          </label>
         </div>
-      </main>
-      <footer className="row-start-3 flex gap-[24px] flex-wrap items-center justify-center">
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/file.svg"
-            alt="File icon"
-            width={16}
-            height={16}
-          />
-          Learn
-        </a>
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/window.svg"
-            alt="Window icon"
-            width={16}
-            height={16}
-          />
-          Examples
-        </a>
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://nextjs.org?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/globe.svg"
-            alt="Globe icon"
-            width={16}
-            height={16}
-          />
-          Go to nextjs.org →
-        </a>
-      </footer>
+        <div className="mb-4">
+          <label className="block">
+            Autonomie actuelle (km) :
+            <input
+              type="number"
+              value={autonomie}
+              onChange={(e) => setAutonomie(e.target.value)}
+              className="ml-4 border rounded p-1"
+            />
+          </label>
+        </div>
+        <div className="mb-4">
+          <label className="block">
+            Consommation (kWh/100 km) :
+            <input
+              type="number"
+              value={consommation}
+              onChange={(e) => setConsommation(e.target.value)}
+              className="ml-4 border rounded p-1"
+            />
+          </label>
+        </div>
+        <div className="mb-4">
+          <label className="block">
+            Puissance du chargeur (kW) :
+            <input
+              type="number"
+              value={puissance}
+              onChange={(e) => setPuissance(e.target.value)}
+              className="ml-4 border rounded p-1"
+            />
+          </label>
+        </div>
+        <div className="mb-4">
+          <label className="block">
+            Marge de sécurité (%) :
+            <input
+              type="number"
+              value={marge}
+              onChange={(e) => setMarge(e.target.value)}
+              className="ml-4 border rounded p-1"
+            />
+          </label>
+        </div>
+        <button type="submit" className="bg-blue-500 text-white px-4 py-2 rounded w-full">
+          Calculer
+        </button>
+      </form>
+      {resultat && (
+        <div className="mt-8">
+          <h2 className="text-xl font-semibold mb-2">Résultat :</h2>
+          <p>{resultat}</p>
+        </div>
+      )}
     </div>
   );
 }
